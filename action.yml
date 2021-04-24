@@ -1,12 +1,24 @@
-name: 'Container Action Template'
-description: 'Get started with Container actions'
-author: 'GitHub'
+name: 'Markdown Link Finder'
+description: "Search within files for links present in markdown's link format"
+author: 'Thomas Paulin'
 inputs: 
-  myInput:
-    description: 'Input to use'
-    default: 'world'
+  files:
+    description: |
+    'A comma separated list of files to search within. These should be the absolute file paths.  Any files which do
+    not end in *.md will be ignored'
+    required: true
+  url_blacklist:
+    description: |
+    'A comma separated list of hosts to which should not be archived. This represents URLs which are considered
+    reliable and are unlikely rot e.g., en.wikipedia.org'
+    required: false
+    default: ''
+outputs:
+  links:
+    description: 'The links found within the provided markdown files'
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs.myInput }}
+    - ${{ inputs.files }}
+    - ${{ inputs.url_blacklist }}

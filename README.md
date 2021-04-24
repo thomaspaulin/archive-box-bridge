@@ -1,5 +1,24 @@
-# Container Action Template
+# Markdown Link Finder
 
-To get started, click the `Use this template` button on this repository [which will create a new repository based on this template](https://github.blog/2019-06-06-generate-new-repositories-with-repository-templates/).
+This action prints "Hello World" or "Hello" + the name of a person to greet to the log.
 
-For info on how to build your first Container action, see the [toolkit docs folder](https://github.com/actions/toolkit/blob/master/docs/container-action.md).
+## Inputs
+
+### `files`
+**Required** A comma separated list of files to search within. These should be the absolute file paths.  Any files which do not end in *.md will be ignored'
+
+### `url_blacklist`
+A comma separated list of hosts to which should not be archived. This represents URLs which are considered reliable and are unlikely rot e.g., en.wikipedia.org'. The default setting permits every URL.
+
+## Outputs
+
+### `links`
+The links found within the provided markdown files.
+
+## Example Usage
+```yaml
+uses: thomaspaulin/markdown-link-finder@v1
+with:
+  files: 'README.md,example.md'
+  url_blacklist: 'en.wikipedia.org,news.ycombinator.com'
+```
