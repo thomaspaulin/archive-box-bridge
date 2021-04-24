@@ -42,7 +42,14 @@ def generate_output():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='archive.log', level=logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+            logging.FileHandler("debug.log"),
+            logging.StreamHandler()
+        ]
+    )
     json_output = generate_output()
     logging.info(json_output)
     print(f"::set-output name=links::{json_output}")
