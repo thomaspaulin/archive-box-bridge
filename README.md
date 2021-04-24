@@ -1,6 +1,6 @@
 # Markdown Link Finder
 
-This action prints "Hello World" or "Hello" + the name of a person to greet to the log.
+This action find all links in the specified markdown files and presents them as output.
 
 ## Inputs
 
