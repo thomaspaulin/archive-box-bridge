@@ -13,9 +13,6 @@ FROM python:3.8-slim
 COPY --from=builder /.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
 
-RUN useradd --create-home appuser
-WORKDIR /home/appuser
-USER appuser
-
+WORKDIR /app
 COPY link_finder.py link_renderer.py ./
-ENTRYPOINT ["python", "./link_finder.py"]
+ENTRYPOINT ["python", "/app/link_finder.py"]
