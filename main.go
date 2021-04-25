@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"golang.org/x/net/context"
 	"log"
 	"net/http"
 	"net/url"
@@ -44,6 +44,7 @@ func archiveLinks(links []string, ctx context.Context) error {
 		dockerComposeFile := fmt.Sprintf("%s%cdocker-compose.yml", archiveBoxDir, os.PathSeparator)
 		_, err := url.Parse(link)
 		if err != nil {
+			cancel()
 			log.Printf("Bad URL: %s\n", link)
 		} else {
 			// yes, there's a potential security hole here but I'm not considering myself a worthy enough victim to go
