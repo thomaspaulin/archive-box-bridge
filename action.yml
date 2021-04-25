@@ -3,14 +3,10 @@ description: "Search within files for links present in markdown's link format"
 author: 'Thomas Paulin'
 inputs: 
   files:
-    description: |
-    'A comma separated list of files to search within. These should be the absolute file paths.  Any files which do
-    not end in *.md will be ignored'
+    description: 'A comma separated list of files to search within. These should be the absolute file paths.  Any files which do not end in *.md will be ignored'
     required: true
   url_blacklist:
-    description: |
-    'A comma separated list of hosts to which should not be archived. This represents URLs which are considered
-    reliable and are unlikely rot e.g., en.wikipedia.org'
+    description: 'A comma separated list of hosts to which should not be archived. This represents URLs which are considered reliable and are unlikely rot e.g., en.wikipedia.org'
     required: false
     default: ''
 outputs:
