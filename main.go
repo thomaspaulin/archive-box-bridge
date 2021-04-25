@@ -63,7 +63,6 @@ func archiveLinks(links []string, ctx context.Context) error {
 	logger = GetLogger()
 
 	for _, link := range links {
-		// todo print errors from docker compose
 		timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
 		dockerComposeFile := fmt.Sprintf("%s%cdocker-compose.yml", archiveBoxDir, os.PathSeparator)
 		_, err := url.Parse(link)
