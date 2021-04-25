@@ -110,6 +110,7 @@ func main() {
 	if len(port) == 0 {
 		port = "3344"
 	}
+	fmt.Printf("Listening on port %s\n", port)
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil); err != nil {
 		panic(err)
 	}
