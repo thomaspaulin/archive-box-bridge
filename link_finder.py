@@ -6,12 +6,20 @@ from typing import List
 import mistune
 import sys
 
-from link_renderer import LinkRenderer
+from link_renderer import LinkRenderer, RendererOptions
 
 
-def find_links(file_path: str, ignore_list: List[str]):
+class FinderOptions:
+    def __init__(self, ignore_list=None, using_hugo=False) -> None:
+        if ignore_list is None:
+            ignore_list = []
+        self.ignore_list = ignore_list
+        self.using_hugo = using_hugo
+
+def find_links(file_path: str, options: FinderOptions):
     # credit to https://github.com/MatMoore/markdown-external-link-finder
-    link_renderer = LinkRenderer(ignore_list)
+    render_opts = RendererOptions(ignore=options.ignore_list)
+    link_renderer = LinkRenderer(render_opts)
     renderer = mistune.Markdown(renderer=link_renderer)
 
     with open(file_path) as f:
@@ -33,10 +41,11 @@ def generate_output():
     except KeyError:
         url_blacklist: List[str] = []
 
+    opts = FinderOptions(ignore_list=url_blacklist, using_hugo=True)
     links: List[str] = []
     for file_path in files:
         if file_path.endswith(".md"):
-            links = links + find_links(file_path, url_blacklist)
+            links = links + find_links(file_path, opts)
 
     return json.dumps({"links": links})
 
