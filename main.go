@@ -38,32 +38,34 @@ func archiveLinks(links []string, ctx context.Context) error {
 
 	logger = GetLogger()
 
+	linkArgString := ""
 	for _, link := range links {
-		timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
-		dockerComposeFile := fmt.Sprintf("%s%cdocker-compose.yml", archiveBoxDir, os.PathSeparator)
 		_, err := url.Parse(link)
 		if err != nil {
-			cancel()
 			logger.Printf("Bad URL: %s\n", link)
+			return err
 		} else {
-			// yes, there's a potential security hole here but I'm not considering myself a worthy enough victim to go
-			// beyond checking the URL parses. I trust ArchiveBox will do some proper validations itself when executing
-			// code that actually uses the URLs
-			cmd := exec.CommandContext(timeoutCtx, "docker-compose", "-f", dockerComposeFile, "run", "archivebox", "add", link)
-			cmd.Stdout = logger.Writer()
-			cmd.Stderr = logger.Writer()
-			// Because this will be called very infrequently pooling the runs is not a priority
-			if err := cmd.Run(); err != nil {
-				logger.Println("An error occurred when running archivebox via docker-compose")
-				logger.Println(err)
-				cancel()
-				return errors.New(fmt.Sprintf("Failed to archive %s", link))
-			} else {
-				cancel()
-				logger.Printf("Archiving %s", link)
-			}
+			linkArgString = fmt.Sprintf("%s \"%s\"", linkArgString, link)
 		}
 	}
+	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	dockerComposeFile := fmt.Sprintf("%s%cdocker-compose.yml", archiveBoxDir, os.PathSeparator)
+	// yes, there's a potential security hole here but I'm not considering myself a worthy enough victim to go
+	// beyond checking the URL parses. I trust ArchiveBox will do some proper validations itself when executing
+	// code that actually uses the URLs
+	cmd := exec.CommandContext(timeoutCtx, "docker-compose", "-f", dockerComposeFile, "run", "archivebox", "add", linkArgString)
+	cmd.Stdout = logger.Writer()
+	cmd.Stderr = logger.Writer()
+
+	// Because this will be called very infrequently pooling the runs is not a priority
+	if err := cmd.Run(); err != nil {
+		logger.Println("An error occurred when running archivebox via docker-compose")
+		logger.Println(err)
+		return errors.New(fmt.Sprintf("Failed to archive one of the following links: %s", linkArgString))
+	}
+	logger.Printf("Archiving links: %s", linkArgString)
 	return nil
 }
 
@@ -97,6 +99,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func injectContext(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestStart := time.Now()
 		logger := GetLogger()
 		archiveBoxDir, isSet := os.LookupEnv("ARCHIVE_BOX_DIR")
 		if !isSet {
@@ -105,6 +108,8 @@ func injectContext(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), archiveBoxDirContextKey, archiveBoxDir)
 		req := r.WithContext(ctx)
 		next.ServeHTTP(w, req)
+		duration := time.Since(requestStart).Milliseconds()
+		logger.Printf("Request duration: %dms", duration)
 	})
 }
 
