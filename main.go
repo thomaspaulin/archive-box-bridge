@@ -45,7 +45,7 @@ func archiveLinks(links []string, ctx context.Context) error {
 			logger.Printf("Bad URL: %s\n", link)
 			return err
 		} else {
-			linkArgString = fmt.Sprintf("%s \"%s\"", linkArgString, link)
+			linkArgString = fmt.Sprintf("%s\n%s", linkArgString, link)
 		}
 	}
 	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
@@ -55,7 +55,17 @@ func archiveLinks(links []string, ctx context.Context) error {
 	// yes, there's a potential security hole here but I'm not considering myself a worthy enough victim to go
 	// beyond checking the URL parses. I trust ArchiveBox will do some proper validations itself when executing
 	// code that actually uses the URLs
-	cmd := exec.CommandContext(timeoutCtx, "docker-compose", "-f", dockerComposeFile, "run", "archivebox", "add", linkArgString)
+	cmd := exec.CommandContext(timeoutCtx, "docker-compose", "-f", dockerComposeFile, "run", "archivebox", "add", "--parser=url_list")
+	stdin, pipeErr := cmd.StdinPipe()
+	if pipeErr != nil {
+		return pipeErr
+	}
+	if _, wErr := stdin.Write([]byte(linkArgString)); wErr != nil {
+		return wErr
+	}
+	if closeErr := stdin.Close(); closeErr != nil {
+		return closeErr
+	}
 	cmd.Stdout = logger.Writer()
 	cmd.Stderr = logger.Writer()
 
